@@ -10,6 +10,8 @@ describe("Ramda modularized builds", () => {
   const errorFixturesDir = path.join(__dirname, "error-fixtures");
 
   fs.readdirSync(fixturesDir).map(caseName => {
+    console.log(caseName)
+    if (caseName !== '__-usage') return
     const fixtureDir = path.join(fixturesDir, caseName);
     const actualFile = path.join(fixtureDir, "actual.js");
     const expectedFile = path.join(fixtureDir, "expected.js");

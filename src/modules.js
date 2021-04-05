@@ -13,18 +13,21 @@ function getDirectories(srcPath) {
 const _ramdaPath = path.dirname(Module._resolveFilename('ramda', merge(new Module, {
   'paths': Module._nodeModulePaths(process.cwd())
 })));
-
 // ramda folder will be /nodemodules/ramda/dist. We want to remove the dist
 const ramdaPath = _ramdaPath.slice(0, _ramdaPath.lastIndexOf('ramda') + 5);
-
 // We do not need to change the search path based on useES since src and es are both built from the
 // same source in Ramda, and the directories will therefore always have identical contents.
 var methods = fs.readdirSync(path.join(ramdaPath, 'src'))
     .filter(name => path.extname(name) == '.js')
     .map(name => path.basename(name, '.js'));
 
+    /**
+     * 分析node_modules中ramda文件的存储模式， 当使用中从ramda中导入了某个方法时， 直接返回该方法相对于node_modules的路径
+     * @param {*} useES 
+     * @param {*} name 
+     * @returns 
+     */
 export default function resolveModule(useES, name) {
-
   for (var category in methods) {
     if (contains(name, methods)) {
       return `ramda/${useES ? 'es' : 'src'}/${name}`;
