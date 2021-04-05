@@ -1,3 +1,4 @@
+import { addDefault } from '@babel/helper-module-imports';
 import resolveModule from './modules';
 
 const SPECIAL_TYPES = ['isMemberExpression', 'isProperty'];
@@ -11,6 +12,7 @@ export default function({ types: t }) {
   // these in the `Program` visitor in order to support running the
   // plugin in watch mode or on multiple files.
   let ramdas,
+      removablePaths,
       specified,
       selectedMethods;
 
@@ -19,7 +21,7 @@ export default function({ types: t }) {
     if (!selectedMethods[methodName]) {
       // 从相关目录中寻找方法的path
       let path = resolveModule(useES, methodName);
-      selectedMethods[methodName] = file.addImport(path, 'default');
+      selectedMethods[methodName] = addDefault(file.path, path, { nameHint: methodName });
     }
     return t.clone(selectedMethods[methodName]);
   }
@@ -47,9 +49,15 @@ export default function({ types: t }) {
         enter() {
           // Track the variables used to import ramda
           ramdas = Object.create(null);
+          removablePaths = [];
           specified = Object.create(null);
           // Track the methods that have already been used to prevent dupe imports
           selectedMethods = Object.create(null);
+        },
+        exit() {
+          removablePaths
+            .filter(path => !path.removed)
+            .forEach(path => path.remove());
         }
       },
       ImportDeclaration(path) {
@@ -68,6 +76,8 @@ export default function({ types: t }) {
           });
           // 移除当前import语句
           path.remove();
+          path.replaceWith(t.nullLiteral())
+          removablePaths.push(path);
         }
       },
       ExportNamedDeclaration(path, state) {

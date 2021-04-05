@@ -1,12 +1,8 @@
-'use strict';
+"use strict";
 
-var _merge = require('ramda/src/merge');
+var _merge2 = _interopRequireDefault(require("ramda/src/merge"));
 
-var _merge2 = _interopRequireDefault(_merge);
-
-var _compose = require('ramda/src/compose');
-
-var _compose2 = _interopRequireDefault(_compose);
+var _compose2 = _interopRequireDefault(require("ramda/src/compose"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

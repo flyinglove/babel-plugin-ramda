@@ -1,20 +1,12 @@
-'use strict';
+"use strict";
 
-var _reject = require('ramda/src/reject');
+var _reject2 = _interopRequireDefault(require("ramda/src/reject"));
 
-var _reject2 = _interopRequireDefault(_reject);
+var _take2 = _interopRequireDefault(require("ramda/src/take"));
 
-var _take = require('ramda/src/take');
+var _add2 = _interopRequireDefault(require("ramda/src/add"));
 
-var _take2 = _interopRequireDefault(_take);
-
-var _add = require('ramda/src/add');
-
-var _add2 = _interopRequireDefault(_add);
-
-var _map = require('ramda/src/map');
-
-var _map2 = _interopRequireDefault(_map);
+var _map2 = _interopRequireDefault(require("ramda/src/map"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
