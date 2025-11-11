@@ -74,9 +74,9 @@ export default function({ types: t }) {
               ramdas[spec.local.name] = true;
             }
           });
-          // 移除当前import语句
-          path.remove();
-          path.replaceWith(t.nullLiteral())
+          // 用一个空节点占位， 在程序遍历完成后再统一移除，
+          // 避免在同一个遍历阶段内尝试替换已删除的节点。
+          path.replaceWith(t.nullLiteral());
           removablePaths.push(path);
         }
       },
