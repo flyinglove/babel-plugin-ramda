@@ -34,7 +34,7 @@ export async function useGrapesEditor(options: UseGrapesEditorOptions = {}): Pro
         blocksBasicOpts: { flexGrid: true },
         navbarOpts: false,
         countdownOpts: false,
-        formsOpts: true
+        formsOpts: {}
       }
     }
   });
@@ -156,59 +156,64 @@ function registerVueComponentType(editor: Editor, registry: ComponentRegistry) {
   const defaultModel = defaultType.model;
   const defaultView = defaultType.view;
 
-  domc.addType('vue-component', {
-    isComponent: (el) => el?.getAttribute?.('data-vue-component') === 'true',
-    model: defaultModel.extend(
-      {
-        defaults: {
-          ...defaultModel.prototype.defaults,
-          droppable: true,
-          copyable: true,
-          resizable: false,
-          layerable: true,
-          selectable: true,
-          component: '',
-          props: {},
-          emits: [],
-          traits: []
-        },
-        init(this: any) {
-          defaultModel.prototype.init?.call(this);
-          this.setAttributes({ 'data-vue-component': 'true' });
-          this.listenTo(this, 'change:traits', this.updatePropsFromTraits);
-          this.listenTo(this, 'change:props', this.updateTraitValues);
-          this.listenTo(this, 'change', this.updatePropsFromTraits);
-        },
-        updatePropsFromTraits(this: any) {
-          const traits = this.get('traits') || [];
-          const nextProps: Record<string, unknown> = { ...this.get('props') };
-          traits.forEach((trait: any) => {
-            const name = trait.name;
-            if (!name) return;
-            const value = this.get(name);
-            if (value !== undefined) {
-              nextProps[name] = value;
-            }
-          });
-          this.set('props', nextProps, { silent: true });
-        },
-        updateTraitValues(this: any) {
-          const traits = this.get('traits') || [];
-          const props = this.get('props') || {};
-          traits.forEach((trait: any) => {
-            const name = trait.name;
-            if (!name) return;
-            if (props[name] !== undefined) {
-              this.set(name, props[name]);
-            }
-          });
-        }
+  const VueComponentModel = defaultModel.extend(
+    {
+      defaults: {
+        ...defaultModel.prototype.defaults,
+        droppable: true,
+        copyable: true,
+        resizable: false,
+        layerable: true,
+        selectable: true,
+        component: '',
+        props: {},
+        emits: [],
+        traits: []
       },
-      {
-        isComponent: (el: HTMLElement) => el?.getAttribute?.('data-vue-component') === 'true'
+      init(this: any) {
+        defaultModel.prototype.init?.call(this);
+        this.setAttributes({ 'data-vue-component': 'true' });
+        this.listenTo(this, 'change:traits', this.updatePropsFromTraits);
+        this.listenTo(this, 'change:props', this.updateTraitValues);
+        this.listenTo(this, 'change', this.updatePropsFromTraits);
+      },
+      updatePropsFromTraits(this: any) {
+        const traits = this.get('traits') || [];
+        const nextProps: Record<string, unknown> = { ...this.get('props') };
+        traits.forEach((trait: any) => {
+          const name = trait.name;
+          if (!name) return;
+          const value = this.get(name);
+          if (value !== undefined) {
+            nextProps[name] = value;
+          }
+        });
+        this.set('props', nextProps, { silent: true });
+      },
+      updateTraitValues(this: any) {
+        const traits = this.get('traits') || [];
+        const props = this.get('props') || {};
+        traits.forEach((trait: any) => {
+          const name = trait.name;
+          if (!name) return;
+          if (props[name] !== undefined) {
+            this.set(name, props[name]);
+          }
+        });
       }
-    ),
-    view: defaultView.extend({
+    },
+    {
+      isComponent: (el: HTMLElement) => el?.getAttribute?.('data-vue-component') === 'true'
+    }
+  );
+
+  Object.defineProperty(VueComponentModel, 'defaults', {
+    configurable: true,
+    writable: true,
+    value: VueComponentModel.prototype.defaults
+  });
+
+  const VueComponentView = defaultView.extend({
       init(this: any) {
         defaultView.prototype.init?.call(this);
         this.listenTo(this.model, 'change:props', this.renderVue);
@@ -291,6 +296,12 @@ function registerVueComponentType(editor: Editor, registry: ComponentRegistry) {
         defaultView.prototype.remove?.call(this);
       }
     })
+  });
+
+  domc.addType('vue-component', {
+    isComponent: (el) => el?.getAttribute?.('data-vue-component') === 'true',
+    model: VueComponentModel,
+    view: VueComponentView
   });
 }
 
