@@ -1,74 +1,36 @@
-babel-plugin-ramda [![Build Status](https://travis-ci.org/megawac/babel-plugin-ramda.svg?branch=master)](https://travis-ci.org/megawac/babel-plugin-ramda)
-==============
+# babel-plugin-ramda Monorepo
 
-This plugin is a transform to remove unused ramda dependencies, without forcing the user to cherry pick methods manually. This lets you use ramda naturally (aka as documented) without worrying about bundling parts you're not using.
+This repository is now organised as a pnpm workspace so that shared tooling and dependencies can be managed in one place. The existing Babel plugin continues to live under [`packages/babel-plugin-ramda`](packages/babel-plugin-ramda).
 
-See also [`babel-plugin-lodash`](https://github.com/megawac/babel-plugin-lodash).
-
-#### Example
-
-Converts
-
-```js
-import R, {map} from 'ramda';
-
-map(R.add(1), [1, 2, 3]);
-```
-
-Roughly to 
-
-```js
-import add from 'ramda/src/add';
-import map from 'ramda/src/map';
-
-map(add(1), [1, 2, 3]);
-```
-
-
-#### Limitations
-
-- You must be using ES6 imports (both specifiers and default work) to load ramda.
-
-#### FAQ
-
-> I receive `TypeError: The plugin "ramda" didn’t export a Plugin instance`<br>
-> or, can I use this plugin with Babel v5?
-
-Babel v5 is no longer supported. Use [v0.1.2](https://github.com/megawac/babel-plugin-ramda/releases/tag/v0.1.2) for support.
-
-#### Usage
-
-###### Via `.babelrc` (Recommended)
-
-```json
-{
-  "plugins": ["ramda"]
-}
-```
-
-or
-```json
-{
-  "plugins": [
-    ["ramda", {
-      "useES": true
-    }]
-  ]
-}
-```
-
-to use the new `ramda/es/` path for imports, which is available since Ramda 0.25. This is recommended as it uses ES modules rather than CommonJS. It defaults to `ramda/src/` when omitted.
-
-###### Via CLI
+## Getting started
 
 ```sh
-$ babel --plugins ramda script.js
+corepack enable
+pnpm install
 ```
 
-###### Via Node API
+Useful scripts:
 
-```javascript
-require("babel-core").transform("code", {
-  plugins: ["ramda"]
-});
-```
+- `pnpm lint` – run ESLint across the workspace.
+- `pnpm format` – verify Prettier formatting.
+- `pnpm format:write` – apply Prettier formatting.
+- `pnpm test` – execute package level unit tests.
+- `pnpm build` – run package build steps.
+
+## Tooling
+
+- **ESLint + Prettier** keep JavaScript formatting and lint rules consistent. ESLint integrates `eslint-plugin-import` and `eslint-config-prettier` to avoid stylistic conflicts.
+- **Husky + lint-staged** run ESLint/Prettier on staged files before every commit to maintain quality without slowing down day-to-day development.
+
+## Continuous Integration
+
+GitHub Actions (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)) installs dependencies via pnpm, runs linting, unit tests, and performs package builds on every push and pull request. Workflow caching keeps installs fast while ensuring the monorepo stays healthy.
+
+## Deployment planning
+
+The plugin itself is published as a package, but this repository also documents an opinionated deployment strategy should the monorepo evolve into an application stack:
+
+- **Builder (static or SSR)** – produce static assets or server bundles using modern tooling (e.g. Vite/Next). Static builds can be deployed directly to object storage/CDN, while SSR bundles can be shipped to container registries.
+- **Renderer (Nuxt SSR or static hosting + serverless API)** – host a Nuxt (or equivalent) renderer behind a managed platform. Pair it with serverless APIs for dynamic capabilities to keep the footprint small and scalable.
+
+These guidelines allow the repository to scale beyond the current plugin with consistent automation and deployment primitives.
