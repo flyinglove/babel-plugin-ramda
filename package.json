@@ -26,5 +26,8 @@
     "ramda",
     "modularize",
     "babel-plugin"
+  ],
+  "workspaces": [
+    "packages/*"
   ]
 }
