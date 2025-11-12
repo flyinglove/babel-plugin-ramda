@@ -1,0 +1,16 @@
+{
+  "name": "renderer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "nuxt": "^3.11.2",
+    "@nuxtjs/sitemap": "^6.0.0",
+    "nuxt-seo-kit": "^2.2.2"
+  }
+}
