@@ -1,14 +1,14 @@
 import { createApp, h } from 'vue';
 import grapesjs, { type Editor } from 'grapesjs';
 import presetWebpage from 'grapesjs-preset-webpage';
-import type { ComponentDefinition, GrapesVueComponent } from './vueRegistry';
-import { componentRegistry } from './vueRegistry';
+import type { ComponentDefinition, ComponentRegistry, GrapesVueComponent } from './vueRegistry';
+import { createComponentRegistry } from './vueRegistry';
 
 interface UseGrapesEditorOptions {
   sidebar?: HTMLElement;
 }
 
-export function useGrapesEditor(options: UseGrapesEditorOptions = {}): Editor {
+export async function useGrapesEditor(options: UseGrapesEditorOptions = {}): Promise<Editor> {
   const editor = grapesjs.init({
     container: '#gjs',
     height: '100%',
@@ -38,6 +38,8 @@ export function useGrapesEditor(options: UseGrapesEditorOptions = {}): Editor {
       }
     }
   });
+
+  const registry = await createComponentRegistry();
 
   const panels = editor.Panels;
   panels.addPanel({
@@ -73,9 +75,9 @@ export function useGrapesEditor(options: UseGrapesEditorOptions = {}): Editor {
     command: 'clear-canvas'
   });
 
-  registerVueBridge(editor);
-  registerVueComponentType(editor);
-  registerVueBlocks(editor, componentRegistry);
+  registerVueBridge(editor, registry);
+  registerVueComponentType(editor, registry);
+  registerVueBlocks(editor, registry);
   registerCommands(editor);
 
   if (options.sidebar) {
@@ -116,38 +118,39 @@ function registerCommands(editor: Editor) {
   });
 }
 
-function registerVueBridge(editor: Editor) {
+function registerVueBridge(editor: Editor, registry: ComponentRegistry) {
   editor.on('load', () => {
     const frameWindow = editor.Canvas.getWindow();
     frameWindow.__GrapesVue = {
       createApp,
       h,
-      registry: componentRegistry
+      registry
     } satisfies GrapesVueComponent;
   });
 }
 
-function registerVueBlocks(editor: Editor, registry: Record<string, ComponentDefinition>) {
+function registerVueBlocks(editor: Editor, registry: ComponentRegistry) {
   const blockManager = editor.BlockManager;
 
-  Object.entries(registry).forEach(([id, definition]) => {
-    blockManager.add(id, {
-      id,
-      label: definition.label,
-      category: definition.category ?? 'Vue 组件',
+  Object.entries(registry).forEach(([componentName, definition]) => {
+    const blockId = definition.block?.id ?? componentName;
+    const blockLabel = definition.block?.label ?? definition.label ?? componentName;
+    const blockCategory = definition.block?.category ?? definition.category ?? 'Vue 组件';
+
+    const baseContent = cloneBlockContent(definition.block?.content);
+    const content = normalizeBlockContent(baseContent, componentName, definition);
+
+    blockManager.add(blockId, {
+      label: blockLabel,
+      category: blockCategory,
+      media: definition.block?.media,
       attributes: { class: 'gjs-block gjs-block--vue' },
-      content: {
-        type: 'vue-component',
-        component: id,
-        props: { ...definition.defaultProps },
-        emits: definition.emits ?? [],
-        traits: definition.traits?.map((trait) => ({ ...trait })) ?? []
-      }
+      content
     });
   });
 }
 
-function registerVueComponentType(editor: Editor) {
+function registerVueComponentType(editor: Editor, registry: ComponentRegistry) {
   const domc = editor.DomComponents;
   const defaultType = domc.getType('default');
   const defaultModel = defaultType.model;
@@ -289,4 +292,53 @@ function registerVueComponentType(editor: Editor) {
       }
     })
   });
+}
+
+function cloneBlockContent(content?: Record<string, unknown>) {
+  if (!content) {
+    return undefined;
+  }
+
+  return JSON.parse(JSON.stringify(content));
+}
+
+function normalizeBlockContent(
+  content: Record<string, unknown> | undefined,
+  componentName: string,
+  definition: ComponentDefinition
+) {
+  const traits = definition.traits?.map((trait) => ({ ...trait })) ?? [];
+  const defaultProps = { ...(definition.defaultProps ?? {}) };
+  const emits = definition.emits ?? [];
+
+  if (!content) {
+    return {
+      type: 'vue-component',
+      component: componentName,
+      props: defaultProps,
+      emits,
+      traits
+    };
+  }
+
+  if (typeof content === 'object' && !Array.isArray(content)) {
+    const enriched = { ...content } as Record<string, unknown>;
+    enriched.type = enriched.type ?? 'vue-component';
+    enriched.component = enriched.component ?? componentName;
+
+    const existingProps = (enriched.props as Record<string, unknown> | undefined) ?? {};
+    enriched.props = { ...defaultProps, ...existingProps };
+
+    if (!enriched.emits) {
+      enriched.emits = emits;
+    }
+
+    if (!enriched.traits && traits.length > 0) {
+      enriched.traits = traits;
+    }
+
+    return enriched;
+  }
+
+  return content;
 }
