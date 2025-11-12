@@ -1,0 +1,43 @@
+{
+  "id": "home",
+  "name": "Homepage",
+  "version": "1.0.0",
+  "metadata": {
+    "theme": "light"
+  },
+  "dataSources": [
+    {
+      "id": "contentApi",
+      "type": "rest",
+      "config": {
+        "endpoint": "https://cms.example.com/content",
+        "method": "GET"
+      },
+      "provides": ["hero", "features"]
+    }
+  ],
+  "root": {
+    "id": "root",
+    "type": "Layout.Stack",
+    "props": {
+      "spacing": "lg"
+    },
+    "children": [
+      {
+        "id": "hero",
+        "type": "Content.Hero",
+        "props": {
+          "title": "{{bindings.hero.title}}"
+        },
+        "dataBindings": {
+          "title": {
+            "sourceId": "contentApi",
+            "path": "hero.title",
+            "defaultValue": "Fallback title"
+          }
+        },
+        "children": []
+      }
+    ]
+  }
+}
