@@ -23,6 +23,14 @@
     "lint-staged": "^15.2.4",
     "prettier": "^3.2.5"
   },
+  "keywords": [
+    "ramda",
+    "modularize",
+    "babel-plugin"
+  ],
+  "workspaces": [
+    "packages/*"
+  ]
   "lint-staged": {
     "**/*.{js,cjs,mjs,ts,tsx}": [
       "eslint --fix",
