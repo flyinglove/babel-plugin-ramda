@@ -28,9 +28,6 @@
     "modularize",
     "babel-plugin"
   ],
-  "workspaces": [
-    "packages/*"
-  ]
   "lint-staged": {
     "**/*.{js,cjs,mjs,ts,tsx}": [
       "eslint --fix",
