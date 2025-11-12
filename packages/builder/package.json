@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@babel-plugin-ramda/materials": "workspace:*",
     "grapesjs": "^0.21.0",
     "grapesjs-preset-webpage": "^0.1.11",
     "vue": "^3.4.21"

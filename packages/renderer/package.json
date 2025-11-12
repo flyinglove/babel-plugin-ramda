@@ -11,6 +11,6 @@
   "dependencies": {
     "nuxt": "^3.11.2",
     "@nuxtjs/sitemap": "^6.0.0",
-    "nuxt-seo-kit": "^2.2.2"
+    "nuxt-seo-kit": "^1.3.9"
   }
 }

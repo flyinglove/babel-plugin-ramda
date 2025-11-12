@@ -6,6 +6,9 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "pnpm --filter builder dev",
+    "dev:builder": "pnpm --filter builder dev",
+    "dev:renderer": "pnpm --filter renderer dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "eslint .",
@@ -28,9 +31,6 @@
     "modularize",
     "babel-plugin"
   ],
-  "workspaces": [
-    "packages/*"
-  ]
   "lint-staged": {
     "**/*.{js,cjs,mjs,ts,tsx}": [
       "eslint --fix",

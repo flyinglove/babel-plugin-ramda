@@ -20,8 +20,8 @@ import { useGrapesEditor } from './useGrapesEditor';
 const sidebarRef = ref<HTMLElement | null>(null);
 let editor: grapesjs.Editor | null = null;
 
-onMounted(() => {
-  editor = useGrapesEditor({
+onMounted(async () => {
+  editor = await useGrapesEditor({
     sidebar: sidebarRef.value ?? undefined
   });
 });
